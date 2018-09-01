@@ -1,0 +1,8 @@
+.idea
+*.swp
+go-test-tmpfile*
+coverage.txt
+coredns
+coredns.exe
+coredns.exe~
+Corefile
