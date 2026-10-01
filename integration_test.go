@@ -24,8 +24,10 @@ func TestInstallation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("listing plugins: %v\n%s", err, output)
 	}
-	if !slices.Contains(strings.Fields(string(output)), "dynapi") {
-		t.Fatalf("dynapi is missing from the built executable:\n%s", output)
+	for _, plugin := range []string{"dynapi", "dynupdate", "tsig"} {
+		if !slices.Contains(strings.Fields(string(output)), plugin) {
+			t.Fatalf("%s is missing from the built executable:\n%s", plugin, output)
+		}
 	}
 	corefile := filepath.Join(t.TempDir(), "Corefile")
 	if err := os.WriteFile(corefile, []byte("example.org:1053 {\n    dynapi\n}\n"), 0600); err != nil {
