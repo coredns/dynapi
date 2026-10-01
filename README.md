@@ -1,5 +1,7 @@
 # dynapi 
 
+![demo](docs/preview.gif)
+
 ## Name
 
 *dynapi* - manage CoreDNS address records through an HTTP API.
