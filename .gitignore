@@ -6,3 +6,4 @@ coredns
 coredns.exe
 coredns.exe~
 Corefile
+/build/
