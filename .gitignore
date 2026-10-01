@@ -7,3 +7,5 @@ coredns.exe
 coredns.exe~
 Corefile
 /build/
+!/examples/Corefile
+/examples/example.org.db*
