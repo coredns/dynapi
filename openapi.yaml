@@ -1,0 +1,437 @@
+openapi: 3.1.0
+info:
+  description: Manage address records through signed DNS requests. Reads cover the
+    configured zone. Writes follow dynupdate permissions. A lost response may follow
+    a committed write. There are no automatic retries or conditional writes.
+  title: CoreDNS dynapi
+  version: "1"
+servers:
+- url: http://127.0.0.1:8080
+paths:
+  /v1/zones/{zone}/records/{name}/{type}:
+    delete:
+      description: Leave other record types intact. Deleting an absent set succeeds.
+      operationId: deleteRecordSet
+      parameters:
+      - description: Configured zone.
+        in: path
+        name: zone
+        required: true
+        schema:
+          description: Configured zone.
+          maxLength: 254
+          type: string
+      - description: Full owner name.
+        in: path
+        name: name
+        required: true
+        schema:
+          description: Full owner name.
+          maxLength: 254
+          type: string
+      - description: A or AAAA.
+        in: path
+        name: type
+        required: true
+        schema:
+          description: A or AAAA.
+          pattern: ^(?:[aA]|[aA]{4})$
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+          description: Not Found
+        "405":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodNotAllowedResponse'
+          description: Method Not Allowed
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityResponse'
+          description: Unprocessable Entity
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGatewayResponse'
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+          description: Service Unavailable
+      security:
+      - bearerAuth: []
+      summary: Delete one record type's complete set
+    get:
+      description: 'Read a signed AXFR snapshot without wildcard expansion or CNAME
+        traversal. Return the lowest stored TTL. Limit: 10001 records, including the
+        repeated SOA, and 16777216 bytes.'
+      operationId: getRecordSet
+      parameters:
+      - description: Configured zone.
+        in: path
+        name: zone
+        required: true
+        schema:
+          description: Configured zone.
+          maxLength: 254
+          type: string
+      - description: Full owner name.
+        in: path
+        name: name
+        required: true
+        schema:
+          description: Full owner name.
+          maxLength: 254
+          type: string
+      - description: A or AAAA.
+        in: path
+        name: type
+        required: true
+        schema:
+          description: A or AAAA.
+          pattern: ^(?:[aA]|[aA]{4})$
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynapiRecordSet'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+          description: Unauthorized
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+          description: Not Found
+        "405":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodNotAllowedResponse'
+          description: Method Not Allowed
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityResponse'
+          description: Unprocessable Entity
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGatewayResponse'
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+          description: Service Unavailable
+      security:
+      - bearerAuth: []
+      summary: Read an exact stored record set
+    put:
+      description: 'Replace only the requested type. Body limit: 65536 bytes. Addresses
+        must match the type and are canonicalized, sorted, and deduplicated. IPv4-mapped
+        and scoped IPv6 addresses are rejected. TTL controls caching and does not
+        expire records.'
+      operationId: replaceRecordSet
+      parameters:
+      - description: Configured zone.
+        in: path
+        name: zone
+        required: true
+        schema:
+          description: Configured zone.
+          maxLength: 254
+          type: string
+      - description: Full owner name.
+        in: path
+        name: name
+        required: true
+        schema:
+          description: Full owner name.
+          maxLength: 254
+          type: string
+      - description: A or AAAA.
+        in: path
+        name: type
+        required: true
+        schema:
+          description: A or AAAA.
+          pattern: ^(?:[aA]|[aA]{4})$
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynapiRecordPayload'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynapiRecordSet'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedResponse'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+          description: Not Found
+        "405":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodNotAllowedResponse'
+          description: Method Not Allowed
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+          description: Conflict
+        "413":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestEntityTooLargeResponse'
+          description: Request Entity Too Large
+        "415":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnsupportedMediaTypeResponse'
+          description: Unsupported Media Type
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnprocessableEntityResponse'
+          description: Unprocessable Entity
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadGatewayResponse'
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+          description: Service Unavailable
+      security:
+      - bearerAuth: []
+      summary: Atomically replace a complete record set
+components:
+  schemas:
+    BadGatewayResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - backend_failure
+            - backend_rejected
+            - read_limit_exceeded
+            type: string
+        type: object
+    BadRequestResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - invalid_json
+            type: string
+        type: object
+    ConflictResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - record_conflict
+            type: string
+        type: object
+    DynapiErrorResponse:
+      properties:
+        code:
+          type: string
+        error:
+          type: string
+      required:
+      - code
+      - error
+      type: object
+    DynapiRecordPayload:
+      additionalProperties: false
+      properties:
+        addresses:
+          items:
+            type: string
+          maxItems: 256
+          minItems: 1
+          type: array
+        ttl:
+          maximum: 2.147483647e+09
+          minimum: 0
+          type: integer
+      required:
+      - ttl
+      - addresses
+      type: object
+    DynapiRecordSet:
+      properties:
+        addresses:
+          items:
+            type: string
+          minItems: 1
+          type: array
+        ttl:
+          maximum: 4.294967295e+09
+          minimum: 0
+          type: integer
+      required:
+      - addresses
+      - ttl
+      type: object
+    ForbiddenResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - update_denied
+            type: string
+        type: object
+    MethodNotAllowedResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - method_not_allowed
+            type: string
+        type: object
+    NotFoundResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - zone_not_found
+            - record_set_not_found
+            - resource_not_found
+            type: string
+        type: object
+    RequestEntityTooLargeResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - body_too_large
+            type: string
+        type: object
+    ServiceUnavailableResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - too_many_requests
+            type: string
+        type: object
+    UnauthorizedResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - unauthorized
+            type: string
+        type: object
+    UnprocessableEntityResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - invalid_name
+            - unsupported_record_type
+            - invalid_address
+            - invalid_record_set
+            type: string
+        type: object
+    UnsupportedMediaTypeResponse:
+      allOf:
+      - $ref: '#/components/schemas/DynapiErrorResponse'
+      - properties:
+          code:
+            enum:
+            - unsupported_content_type
+            type: string
+        type: object
+  securitySchemes:
+    bearerAuth:
+      description: Private token configured by token or token_env.
+      scheme: bearer
+      type: http

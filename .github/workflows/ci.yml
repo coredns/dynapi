@@ -35,6 +35,8 @@ jobs:
           git diff --exit-code -- go.mod go.sum
       - name: Check installation in CoreDNS
         run: make integration
+      - name: Benchmark plugin
+        run: make benchmark
 
   dependency-review:
     if: github.event_name == 'pull_request'

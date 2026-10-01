@@ -1,0 +1,4 @@
+$ORIGIN example.org. ; Resolve relative names within this zone.
+@ 60 IN SOA ns.example.org. hostmaster.example.org. 1 3600 600 86400 60 ; Start the authoritative zone.
+@ 60 IN NS ns.example.org. ; Declare its nameserver.
+ns 60 IN A 127.0.0.1 ; Point the example nameserver at loopback.

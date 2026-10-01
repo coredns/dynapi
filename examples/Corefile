@@ -1,0 +1,30 @@
+example.org:1053 { # Use an unprivileged DNS port for this local starter.
+    bind 127.0.0.1 # Keep DNS and the bridge on loopback.
+
+    dynapi 127.0.0.1:8080 { # Accept HTTP requests from local clients.
+        token_env DYNAPI_TOKEN # Use a separate credential for HTTP clients.
+
+        upstream 127.0.0.1:1053 # Send signed DNS requests to this server block.
+
+        identity update-key.example.org. # Match the TSIG key and write permissions below.
+        secret_env DYNAPI_TSIG_SECRET # Share this DNS credential with tsig.
+    }
+
+    tsig {
+        secret update-key.example.org. {$DYNAPI_TSIG_SECRET} # Authenticate the bridge's DNS requests.
+
+        require_opcode UPDATE # Reject unsigned changes.
+        require AXFR # Protect the zone snapshots used by GET.
+    }
+
+    transfer {
+        to 127.0.0.1 # Allow zone reads only from local clients.
+    }
+
+    dynupdate {
+        file example.org.zone # Seed a new database with this starter zone.
+        database example.org.db # Keep committed records across process restarts.
+
+        allow update-key.example.org. host.example.org. A AAAA # Limit writes to the example host.
+    }
+}

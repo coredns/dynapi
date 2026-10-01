@@ -1,0 +1,136 @@
+version: "2"
+
+run:
+  timeout: 5m
+  build-tags: [integration, grpcnotrace]
+  tests: true
+
+linters:
+  default: all
+  disable:
+    - exhaustruct # Superseded by exhaustruct_v5.
+    - wsl # Superseded by wsl_v5.
+    - gomodguard # Superseded by gomodguard_v2.
+    - depguard # No import allowlist is defined for this plugin.
+    - goheader # CoreDNS does not require a license header in each Go file.
+    - noinlineerr # Keep standard Go scoped error checks.
+    - testpackage # Unit tests exercise private plugin configuration and handlers.
+  settings:
+    cyclop:
+      max-complexity: 10
+      package-average: 5
+    decorder:
+      dec-order: [const, type, var, func]
+      disable-dec-order-check: false
+      disable-init-func-first-check: false
+      disable-dec-num-check: false
+      disable-type-dec-num-check: false
+      disable-const-dec-num-check: false
+      disable-var-dec-num-check: false
+    errcheck:
+      exclude-functions:
+        - '(net.Conn).Close' # Socket cleanup cannot change a completed or cancelled transfer.
+    exhaustruct_v5:
+      explicit-mode: true
+      enforce-patterns: ['^github\.com/coredns/dynapi/.*']
+      allow-empty: true
+      allow-empty-returns: true
+      allow-empty-declarations: true
+    funcorder:
+      constructor: true
+      struct-method: true
+      function: true
+    funlen:
+      lines: 60
+      statements: 40
+      ignore-comments: false
+    gocognit:
+      min-complexity: 15
+    gocritic:
+      enabled-tags: [diagnostic, style, performance, experimental, opinionated]
+      disabled-checks: [unnamedResult] # nonamedreturns owns return-value style.
+    gocyclo:
+      min-complexity: 10
+    govet:
+      enable-all: true
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - generic
+        - '^github\.com/miekg/dns\.RR$'
+        - '^github\.com/coredns/coredns/plugin\.Handler$'
+    lll:
+      line-length: 120
+    maintidx:
+      under: 30
+    nestif:
+      min-complexity: 4
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    prealloc:
+      for-loops: true
+    revive:
+      enable-all-rules: true
+      directives:
+        - name: specify-disable-reason
+      rules:
+        - name: receiver-naming
+        - name: cognitive-complexity
+          arguments: [15]
+        - name: line-length-limit
+          arguments: [120]
+        - name: multiline-if-init
+          disabled: true # golines wraps calls in standard Go if statements.
+        - name: empty-lines
+          disabled: true # wsl_v5 owns blank line placement.
+        - name: function-length
+          disabled: true # funlen owns function length limits.
+        - name: add-constant
+          disabled: true # mnd checks numeric literals without flagging protocol strings.
+    wrapcheck:
+      ignore-sig-regexps:
+        - 'caddyfile.Dispenser.*(ArgErr|Err)'
+        - 'plugin.(Error|NextOrFailure)'
+    staticcheck:
+      checks: [all]
+    varnamelen:
+      ignore-names: [err, ok, ctx, id, ip, rr, r, w, t]
+    whitespace:
+      multi-if: true
+      multi-func: false # gofumpt removes blank lines at the start of functions.
+    wsl_v5:
+      default: all
+      disable: [leading-whitespace] # whitespace requires space after multiline conditions.
+  exclusions:
+    presets: []
+    rules:
+      - path: '(^main\.go$|plugins/dynapi/setup\.go$)'
+        linters: [gochecknoinits]
+        text: 'init'
+      - path: 'plugins/dynapi/setup\.go$'
+        linters: [gochecknoglobals]
+        text: 'log'
+      - path: '_test\.go$'
+        linters: [exhaustruct_v5, goconst, mnd]
+        text: '.*' # Test fixtures intentionally use literal values and partial states.
+      - path: 'plugins/dynapi/config_test\.go$'
+        linters: [gosec]
+        text: 'G101' # Public test credentials are not real secrets.
+
+formatters:
+  enable: [gci, gofumpt, golines]
+  settings:
+    gci:
+      sections: [standard, default, localmodule]
+    gofumpt:
+      module-path: github.com/coredns/dynapi
+    golines:
+      max-len: 100
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
