@@ -64,16 +64,17 @@ after `acl`:
 dynapi:github.com/coredns/dynapi/plugins/dynapi
 ```
 
-Then resolve a reviewed dynapi revision and rebuild CoreDNS:
+Then install v0.1.0 and rebuild CoreDNS:
 
 ```sh
-go get github.com/coredns/dynapi/plugins/dynapi@REVISION
+go get github.com/coredns/dynapi/plugins/dynapi@v0.1.0
+# Or install the latest release:
+go get github.com/coredns/dynapi/plugins/dynapi@latest
 go generate coredns.go
 go build -o coredns .
 ```
 
-Replace `REVISION` with a commit or release tag. There is no dynapi release
-yet. `plugin.cfg.yaml` records the intended placement for external build
+`plugin.cfg.yaml` records the intended placement for external build
 tooling. The root executable sets the same placement in Go.
 
 The development executable includes `dynupdate` and `tsig` from a pinned
