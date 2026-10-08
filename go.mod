@@ -6,7 +6,7 @@ require (
 	github.com/coredns/caddy v1.1.4
 	github.com/coredns/coredns v1.14.8-0.20260930135946-f44a91377a0b
 	github.com/miekg/dns v1.1.73
-	github.com/swaggest/jsonschema-go v0.3.78
+	github.com/swaggest/jsonschema-go v0.3.79
 	github.com/swaggest/openapi-go v0.2.61
 )
 
